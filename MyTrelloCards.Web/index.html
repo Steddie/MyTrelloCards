@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>My Trello Cards</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+	<link href="Content/jquery-ui.css" rel="stylesheet" />
+	<link href="Content/jquery-ui.structure.css" rel="stylesheet" />
+	<link href="Content/jquery-ui.theme.css" rel="stylesheet" />
+	<link href="Content/bootstrap.css" rel="stylesheet" />
+	<link href="Content/bootstrap-theme.css" rel="stylesheet" />
+	<link href="Content/bootstrap-switch.css" rel="stylesheet"/>
+	<link href="Content/jasny-bootstrap.css" rel="stylesheet" />
+	<link href="Content/mytrellocards.css" rel="stylesheet"/>
+
+	<meta http-equiv="cache-control" content="max-age=0" />
+	<meta http-equiv="cache-control" content="no-cache" />
+	<meta http-equiv="expires" content="0" />
+	<meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+	<meta http-equiv="pragma" content="no-cache" />
+</head>
+<body>
+	<div>
+		<div id="loggedout">
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-6 col-xs-12 col-sm-push-3">
+						<p>
+							<a href="http://trello.com/" class="trello">Trello</a> is a great tool that our team have been using since mid 2013. It's simple, extremely flexible and makes it easy to quickly organize many types of projects.
+						</p>
+						<p>
+							The only thing that has been a headache is to get a good overview everything you have been assigned to if you have multiple active boards, which is why I built <strong>MyTrelloCards</strong> using Trello's developer api. It's completely built in html/css/js.
+						</p>
+						<p>
+							Hope you like it!
+						</p>
+						<a id="connectLink" href="#" class="btn btn-primary btn-block btn-lg">Connect To Trello</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="loggedin">
+			<div class="navmenu navmenu-default navmenu-fixed-left offcanvas">
+				<ul class="nav navmenu-nav">
+					<li><h4>MyTrelloCards</span></h4></li>
+					<li>Logged in as <span id="fullName"></span></li>
+					<li>
+						<div class="form-inline">
+							<label for="orderByBoard">Order by Boards</label>
+							<input type="checkbox" value="true" id="orderByBoard" checked data-wrapper-class="pull-right">
+						</div>
+					</li>
+					<li>
+						<div class="form-inline">
+							<label for="showOnlyStarred">Show starred only</label>
+							<input type="checkbox" value="true" id="showOnlyStarred" data-wrapper-class="pull-right">
+						</div>
+					</li>
+					<li>
+						<div class="form-inline">
+							<label for="includeArchivedItems">Include archived items</label>
+							<input type="checkbox" value="true" id="includeArchivedItems" data-wrapper-class="pull-right" disabled />
+						</div>
+					</li>
+					<li><a id="disconnect" href="#" class="btn btn-default btn-lg">Log Out</a></li>
+				</ul>
+			</div>
+			<div class="navbar navbar-default navbar-fixed-top">
+				<form id="cpForm" class="navbar-form">
+					<button type="button" class="btn btn-default" data-toggle="offcanvas" data-target=".navmenu">
+						<span class="glyphicon glyphicon-cog"></span>
+					</button>
+					<div class="form-group">
+						<label for="approvedListNames" class="sr-only">Filter column names</label>
+						<div class="input-group">
+							<div class="input-group-addon">
+								<span class="glyphicon glyphicon-filter"></span>
+							</div>
+							<input type="text" class="form-control" id="approvedListNames" placeholder="Filter columns: Backlog, To do, Doing, Checked in, Estimates needed">
+						</div>
+					</div>
+					<button type="submit" class="btn btn-default hidden">Submit</button>
+				</form>
+			</div>
+			<div id="output"></div>
+			<div class="clearfix"></div>
+		</div>
+	</div>
+	<script src="Scripts/jquery-2.2.3.js"></script>
+	<script src="Scripts/jquery-ui.js"></script>
+	<script src="Scripts/bootstrap.js"></script>
+	<script src="Scripts/bootstrap-switch.js"></script>
+	<script src="https://api.trello.com/1/client.js?key=642e880f2befe3be2887daa852fd7da7"></script>
+	<!--<script src="https://api.trello.com/1/client.js?key=00f1dd1e00000f1dd1e00000f1dd1e00&dummy=.js"></script>-->
+	<script src="Scripts/thenBy.js"></script>
+	<script src="Scripts/js.cookie.js"></script>
+	<script src="Scripts/mustache.js"></script>
+	<script src="Scripts/jasny-bootstrap.js"></script>
+	<script src="Scripts/mytrellocards.js"></script>
+</body>
+</html>
