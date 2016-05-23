@@ -22,17 +22,32 @@ Array.prototype.getUnique = function () {
 	return a;
 }
 
+Array.prototype.getUniqueBy = function (fn) {
+	var unique = {};
+	var distinct = [];
+	this.forEach(function (x) {
+		var key = fn(x);
+		if (!unique[key]) {
+			distinct.push(x);
+			unique[key] = true;
+		}
+	});
+	return distinct;
+}
+
 var myTrello = myTrello || {};
 myTrello = {
 	//Global Vars
 	listNames: [],
 	myLists: [],
+	myVisibleBoards: [],
 	myCards: [],
 	myVisibleCards: [],
 	member: "",
 	//Init
 	init: function () {
 		myTrello.autorize();
+		myTrello.setApprovedListNames();
 		this.eventBindings.run();
 	},
 	settings: {
@@ -121,7 +136,7 @@ myTrello = {
 			  	}
 			  })
 			  .autocomplete({
-			  	minLength: 0,
+			  	minLength: 2,
 			  	source: function (request, response) {
 			  		// delegate back to autocomplete, but extract the last term
 			  		response($.ui.autocomplete.filter(
@@ -145,20 +160,29 @@ myTrello = {
 			  });
 		},
 
-		bindToggler: function() {
+		bindToggler: function () {
+			//Toggle board visibility
+
+			//If order by boards, do lower
+			//If not, hide those cards completely
+
 			$(".toggler").on("click", function() {
 				$(this).toggleClass("active");
-				var $children = $(this).parent().find(".card");
-				if ($(this).hasClass("active")) {
-					$children.show(200);
-				} else {
-					$children.hide(200);
-				}
+				var boardId = $(this).parent().attr("data-board-id");
+				myTrello.setHiddenBoards(boardId);
+				$("body").trigger("formChanged");
+				//var $children = $(this).parent().find(".card");
+				//if ($(this).hasClass("active")) {
+				//	$children.show(200);
+				//} else {
+				//	$children.hide(200);
+				//}
 			});
 		},
 
 		bindFormChangedListener: function () {
 			$("body").on("formChanged", function () {
+				myTrello.saveApprovedListNames();
 				myTrello.showCards();
 			});
 		},
@@ -217,7 +241,7 @@ myTrello = {
 	onAuthorize: function () {
 		myTrello.updateLoggedIn();
 		$("#output").empty();
-
+		var hiddenBoards = myTrello.getHiddenBoards();
 		Trello.members.get("me", function (member) {
 			$("#fullName").text(member.fullName);
 			myTrello.member = member;
@@ -250,10 +274,12 @@ myTrello = {
 							if (foundList !== false) return;
 							if (list.id === card.idList) {
 								foundList = bandl;
+
 								myTrello.myCards.push({
 									b: foundList.b.name,
 									bClosed: foundList.b.closed,
 									bId: foundList.b.id,
+									bInitiallyHidden: myTrello.isHiddenBoard(foundList.b.id, hiddenBoards),
 									bStarred: foundList.b.starred,
 									bUrl: foundList.b.shortUrl,
 									bgi: foundList.b.prefs.backgroundImage,
@@ -278,11 +304,19 @@ myTrello = {
 	//endregion Trello login/out
 
 	//region Cards
+	saveApprovedListNames: function() {
+		$.cookie("myTrelloBoards-ApprovedListNames-" + myTrello.member.id, $("#approvedListNames").val());
+	},
+
+	setApprovedListNames: function() {
+		$("#approvedListNames").val($.cookie("myTrelloBoards-ApprovedListNames-" + myTrello.member.id));
+	},
+
 	filterCards: function () {
 		var approvedListNames = $("#approvedListNames").val();
 
 		if (approvedListNames.length == 0) {
-			approvedListNames = ["Backlog", "Doing", "To Do", "Todo", "Checked In", "Need Estimate", "Needs Estimate", "Estimates Needed"];
+			approvedListNames = ["Backlog", "Doing", "To Do", "Todo", "Checked In", "Estimate"];
 		} else {
 			approvedListNames = approvedListNames.split(",");
 		}
@@ -298,6 +332,7 @@ myTrello = {
 
 		myTrello.myVisibleCards = [];
 
+		// Set visible cards
 		$.each(myTrello.myCards, function (ix, cardObj) {
 
 			if (!myTrello.settings.includeArchivedItems) {
@@ -312,6 +347,20 @@ myTrello = {
 					break;
 				}
 			}
+		});
+
+		myTrello.myVisibleBoards = [];
+
+		// Set visible boards
+		$.each(myTrello.myVisibleCards, function (ix, cardObj) {
+			var isVisibleBoard = false;
+			for (var i = 0; i < myTrello.myVisibleBoards.length; i++) {
+				if (myTrello.myVisibleBoards[i].bId == cardObj.bId)
+					isVisibleBoard = true;
+			};
+
+			if (!isVisibleBoard)
+				myTrello.myVisibleBoards.push({ b: cardObj.b, bId: cardObj.bId, bgc: cardObj.bgc, bgi: cardObj.bgi });
 		});
 	},
 
@@ -329,13 +378,15 @@ myTrello = {
 		var initialized = false;
 		var currentSectionHeader = "";
 		var currentListHeader = "";
+		var hiddenBoards = myTrello.getHiddenBoards();
 
-		$.each(myTrello.myVisibleCards, function (ix, cardObj) {
+		$.each(myTrello.myVisibleCards, function(ix, cardObj) {
 			if (myTrello.settings.showOnlyStarred && !cardObj.bStarred) return;
 
 			if (myTrello.settings.orderByBoards) {
 				if (!initialized) {
 					$("body").removeClass("boardDisplay");
+					initialized = true;
 				}
 
 				//Per Board
@@ -362,7 +413,7 @@ myTrello = {
 						.attr("data-board-id", cardObj.bId)
 						.addClass("board")
 						.append($("<div>").addClass("handle").append($("<span>").addClass("glyphicon glyphicon-sort")))
-						.append($("<div>").addClass("toggler active")
+						.append($("<div>").addClass("toggler toggler-board" + (myTrello.isHiddenBoard(cardObj.bId, hiddenBoards) ? "":" active"))
 							.append($("<span>").addClass("glyphicon glyphicon-eye-open js-on"))
 							.append($("<span>").addClass("glyphicon glyphicon-eye-close js-off"))
 						)
@@ -399,6 +450,7 @@ myTrello = {
 			} else {
 				if (!initialized) {
 					$("body").addClass("boardDisplay");
+					initialized = true;
 				}
 
 				if (cardObj.l != currentSectionHeader) {
@@ -419,7 +471,7 @@ myTrello = {
 						.appendTo($cards);
 
 					$currentRow = $("<div>")
-						.addClass("card")
+						.addClass("cards")
 						.appendTo($cardContainer);
 				}
 			}
@@ -429,6 +481,11 @@ myTrello = {
 			//		//.addClass("row")
 			//		.appendTo($cardContainer);
 			//}
+			columnCounter++;
+
+			currentSectionHeader = myTrello.settings.orderByBoards ? cardObj.b : cardObj.l;
+			currentListHeader = cardObj.l;
+			if (myTrello.isHiddenBoard(cardObj.bId, hiddenBoards)) return;
 
 			var $card = $("<a>")
 				.attr({ href: cardObj.c.url, target: "trello" })
@@ -439,8 +496,7 @@ myTrello = {
 			} else {
 				$card.append($("<span>").addClass("category").text(cardObj.b));
 				$card = $("<div>")
-					.css("padding", ".4em")
-					.css("border-radius", ".6em")
+					.addClass("card-border")
 					.append($card);
 
 				if (cardObj.bgi != null) {
@@ -454,20 +510,15 @@ myTrello = {
 			}
 
 			$("<div>")
-				.css("margin-bottom", ".8em")
+				.addClass("card")
 				.append($card)
 				.appendTo($currentRow);
-
-			currentSectionHeader = myTrello.settings.orderByBoards ? cardObj.b : cardObj.l;
-			currentListHeader = cardObj.l;
-			initialized = true;
-
-			columnCounter++;
-
 		});
 	},
 
-	postRender: function() {
+	postRender: function () {
+		myTrello.hideBoardsOrLists();
+		myTrello.renderBoardFilter();
 		myTrello.eventBindings.bindSetSortable();
 		myTrello.eventBindings.bindToggler();
 	},
@@ -487,24 +538,87 @@ myTrello = {
 			for (var i = 0; i < divs.length; i++) {
 				ids.push($(divs[i]).data("board-id"));
 			}
-			$.cookie("myTrelloBoards-" + myTrello.member.id, ids);
+			$.cookie("myTrelloBoards-Order-" + myTrello.member.id, ids);
 		} else {
 			for (var i = 0; i < divs.length; i++) {
 				ids.push($(divs[i]).data("list-name"));
 			}
-			$.cookie("myTrelloLists-" + myTrello.member.id, ids);
+			$.cookie("myTrelloLists-Order-" + myTrello.member.id, ids);
 		}
 	},
 
 	getBoardOrder: function () {
 		var cookie;
 		if (myTrello.settings.orderByBoards) {
-			cookie = $.cookie("myTrelloBoards-" + myTrello.member.id);
+			cookie = $.cookie("myTrelloBoards-Order-" + myTrello.member.id);
 		} else {
-			cookie = $.cookie("myTrelloLists-" + myTrello.member.id);
+			cookie = $.cookie("myTrelloLists-Order-" + myTrello.member.id);
 		}
 		return (cookie ? cookie.split(',') : []);
 
+	},
+
+	setHiddenBoards: function (boardId) {
+		var cookie = $.cookie("myTrelloBoards-Hidden-" + myTrello.member.id);
+		var ids = cookie ? cookie.split(',') : [];
+		
+		var index = $.inArray(boardId, ids);
+		if (index != -1) {
+			ids.splice(index, 1);
+		} else {
+			ids.push(boardId);
+		}
+
+		$.cookie("myTrelloBoards-Hidden-" + myTrello.member.id, ids);
+	},
+
+	isHiddenBoard: function(boardId, hiddenBoardsArray) {
+		if (!boardId) return false;
+		if (!hiddenBoardsArray) hiddenBoardsArray = myTrello.getHiddenBoards();
+
+		var index = $.inArray(boardId, hiddenBoardsArray);
+		return (index != -1);
+	},
+
+	hideBoardsOrLists: function () {
+		if (myTrello.settings.orderByBoards) {
+			var hiddenBoards = myTrello.getHiddenBoards();
+			for (var i = 0; i < hiddenBoards.length; i++) {
+				$("#output").find(".board[data-board-id=" + hiddenBoards[i] + "]").find(".card").hide();
+			}
+		} else {
+			//Foreach list that is empty, hide.
+			$(".cards:empty").parent().hide();
+		}
+	},
+
+	getHiddenBoards: function() {
+		var cookie = $.cookie("myTrelloBoards-Hidden-" + myTrello.member.id);
+		return (cookie ? cookie.split(',') : []);
+	},
+
+	renderBoardFilter: function() {
+		var $boardFilter = $("#boardfilter");
+		var boards = [];
+		var hiddenBoards = myTrello.getHiddenBoards();
+
+		myTrello.myVisibleBoards.sort(firstBy(function(v) { return v.b; })).getUniqueBy(function(x) { return x.bId});
+		// Set visible cards
+		$.each(myTrello.myVisibleBoards, function (ix, board) {
+
+			var isActive = !myTrello.isHiddenBoard(board.bId, hiddenBoards);
+
+			boards.push({
+				bId: board.bId,
+				b: board.b,
+				bgc: board.bgc,
+				bgi: board.bgi,
+				ba: isActive
+			});
+		});
+
+		var rendered = Mustache.render($("#toggler-nav").html(), { "boards": boards });
+		$boardFilter.html(rendered);
 	},
 
 	sortCards: function () {

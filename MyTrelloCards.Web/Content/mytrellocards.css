@@ -49,15 +49,8 @@ a:hover {
 }
 
 .toggler {
-	color: rgba(255,255,255,.5);
-	font-size: 1.4em;
 	cursor: pointer;
-	position: absolute;
-	right: 2.8em;
-	top: .5em;
-	z-index: 10;
 }
-
 
 	.toggler .js-off {
 		display: inline-block;
@@ -75,6 +68,43 @@ a:hover {
 		display: inline-block;
 	}
 
+.toggler-nav .js-off {
+	color: darkgray;
+}
+
+.toggler-board {
+	color: rgba(255,255,255,.5);
+	font-size: 1.4em;
+	position: absolute;
+	right: 2.8em;
+	top: .5em;
+	z-index: 10;
+}
+
+	.toggler-nav span {
+		float: right;
+		font-size: 1.5em;
+		padding-top: .4em;
+	}
+
+	.navmenu-toggler li {
+		height: 4.6em;
+		overflow: hidden;
+	}
+
+
+.navmenu h4 {
+	line-height: 2.5em;
+	display: inline;
+}
+
+.toggler-nav .boardcolor {
+	background-color: rgb(0, 121, 191);
+	margin-right: .5em;
+	padding: 0 .6em;
+	border-radius: .3em;
+	display: inline;
+}
 
 .handle {
 	color: rgba(255,255,255,.5);
@@ -90,16 +120,25 @@ a:hover {
 	font-size: 1.2em;
 }
 
-.card a {
-	display: block;
-	padding: 1em;
-	background-color: #fff;
-	border-bottom: 1px solid #ccc;
-	border-radius: .4em;
-	cursor: pointer;
-	min-height: 2em;
-	position: relative;
-	z-index: 0;
+.card {
+	margin-bottom: .8em;
+}
+
+	.card a {
+		display: block;
+		padding: 1em;
+		background-color: #fff;
+		border-bottom: 1px solid #ccc;
+		border-radius: .4em;
+		cursor: pointer;
+		min-height: 2em;
+		position: relative;
+		z-index: 0;
+	}
+
+.card-border {
+	padding: .4em;
+	border-radius: .6em;
 }
 
 .boardDisplay {
@@ -220,7 +259,8 @@ h4, .h4 {
 	}
 }
 
-.navmenu-fixed-left li {
+.navmenu-fixed-left li,
+.navmenu-fixed-right li {
 	padding: .8em 1em;
 	line-height: 3em;
 	border-bottom: 1px #cccccc solid;
@@ -249,9 +289,15 @@ h4, .h4 {
 		margin-right: 5px;
 	}
 
+		.navbar-form > button.btn-right {
+			right: 0;
+			margin-left: 5px;
+			margin-right: 1em;
+		}
+
 	.navbar-form .form-group {
 		margin-bottom: 0;
-		padding-left: 4em;
+		padding: 0 4em;
 	}
 
 .navbar-text {

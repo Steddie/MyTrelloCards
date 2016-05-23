@@ -43,7 +43,7 @@
 		</div>
 
 		<div id="loggedin">
-			<div class="navmenu navmenu-default navmenu-fixed-left offcanvas">
+			<div class="navmenu navmenu-default navmenu-fixed-left offcanvas navmenu-left">
 				<ul class="nav navmenu-nav">
 					<li><h4>MyTrelloCards</span></h4></li>
 					<li>Logged in as <span id="fullName"></span></li>
@@ -68,10 +68,31 @@
 					<li><a id="disconnect" href="#" class="btn btn-default btn-lg">Log Out</a></li>
 				</ul>
 			</div>
+			<div class="navmenu navmenu-default navmenu-fixed-right offcanvas navmenu-right navmenu-toggler" id="boardfilter">
+				<!--<ul class="nav navmenu-nav">
+					<li data-board-id="123" data-board-color="rgb(0, 121, 191)" data-board-image="url">
+						<div class="toggler toggler-nav">
+							<span class="glyphicon glyphicon-eye-open js-on"></span>
+							<span class="glyphicon glyphicon-eye-close js-off"></span>
+							<h4>Blue Buddies</h4>
+						</div>
+					</li>
+					<li data-board-id="456" data-board-color="rgb(0, 121, 191)" data-board-image="url">
+						<div class="toggler toggler-nav">
+							<span class="glyphicon glyphicon-eye-open js-on"></span>
+							<span class="glyphicon glyphicon-eye-close js-off"></span>
+							<h4>Blue Buffalo</h4>
+						</div>
+					</li>
+				</ul>-->
+			</div>
 			<div class="navbar navbar-default navbar-fixed-top">
 				<form id="cpForm" class="navbar-form">
-					<button type="button" class="btn btn-default" data-toggle="offcanvas" data-target=".navmenu">
+					<button type="button" class="btn btn-default" data-toggle="offcanvas" data-target=".navmenu-left">
 						<span class="glyphicon glyphicon-cog"></span>
+					</button>
+					<button type="button" class="btn btn-default btn-right" data-toggle="offcanvas" data-target=".navmenu-right">
+						<span class="glyphicon glyphicon-th-list"></span>
 					</button>
 					<div class="form-group">
 						<label for="approvedListNames" class="sr-only">Filter column names</label>
@@ -100,5 +121,20 @@
 	<script src="Scripts/mustache.js"></script>
 	<script src="Scripts/jasny-bootstrap.js"></script>
 	<script src="Scripts/mytrellocards.js"></script>
+	<script id="toggler-nav" type="x-tmpl-mustache">
+		<ul class="nav navmenu-nav">
+			{{#boards}}
+			<li data-board-id="{{bId}}">
+				<div class="toggler toggler-nav {{#ba}}active{{/ba}}">
+					<span class="glyphicon glyphicon-eye-open js-on"></span>
+					<span class="glyphicon glyphicon-eye-close js-off"></span>
+					<div class="boardcolor" style="{{#bgi}}background-image: url({{bgi}});{{/bgi}}{{#bgc}}background-color: {{bgc}};{{/bgc}}">
+					</div>
+					<h4>{{b}}</h4>
+				</div>
+			</li>
+			{{/boards}}
+		</ul>
+	</script>
 </body>
 </html>
