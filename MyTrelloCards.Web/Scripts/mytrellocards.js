@@ -59,6 +59,9 @@ myTrello = {
 		bindDisconnect: function () {
 			$("#disconnect").on("click", myTrello.logout);
 		},
+		bindReset: function () {
+			$("#reset").on("click", myTrello.resetCookies);
+		},
 		bindConnect: function () {
 			$("#connectLink").on("click", function () {
 				console.log("connectLink clicked");
@@ -197,6 +200,7 @@ myTrello = {
 		run: function () {
 			myTrello.eventBindings.bindDisconnect();
 			myTrello.eventBindings.bindConnect();
+			myTrello.eventBindings.bindReset();
 			myTrello.eventBindings.bindControlpanelEvents();
 			myTrello.eventBindings.bindFormChangedListener();
 			myTrello.eventBindings.bindCardsLoadedListener();
@@ -302,6 +306,15 @@ myTrello = {
 		});
 	},
 	//endregion Trello login/out
+
+	resetCookies: function() {
+		$.removeCookie("myTrelloBoards-ApprovedListNames-" + myTrello.member.id);
+		$.removeCookie("myTrelloBoards-Order-" + myTrello.member.id);
+		$.removeCookie("myTrelloBoards-Hidden-" + myTrello.member.id);
+		$.removeCookie("myTrelloLists-Order-" + myTrello.member.id);
+
+		myTrello.showCards();
+	},
 
 	//region Cards
 	saveApprovedListNames: function() {
